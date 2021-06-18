@@ -1,0 +1,19 @@
+{
+  "name": "port_scan_cli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Donghua Liu <liudonghua123@gmail.com> (https://liudonghua.com/)",
+  "license": "MIT",
+  "scripts": {
+    "build": "ncc build && shx echo #!/usr/bin/env node > dist/port_scan_cli && cat dist/index.js >> dist/port_scan_cli && shx chmod a+x dist/port_scan_cli"
+  },
+  "dependencies": {
+    "@vercel/ncc": "^0.28.6",
+    "chalk": "^4.1.1",
+    "commander": "^7.2.0",
+    "ora": "^5.4.1",
+    "shx": "^0.3.3",
+    "ws": "^7.5.0",
+    "yargs": "^17.0.1"
+  }
+}
