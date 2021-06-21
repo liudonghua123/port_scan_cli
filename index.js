@@ -30,7 +30,7 @@ socket.on("open", () => {
   // {"ip":"localhost","port":"80,21,22"}
   socket.send(`{"ip":"${host}","port":"${port}"}`)
   // close the socket
-  socket.close()
+  setTimeout(() => socket.close(), 10000);
 });
 
 socket.on("message", (data) => {
