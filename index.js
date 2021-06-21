@@ -3,6 +3,12 @@ const ora = require('ora');
 const chalk = require('chalk');
 const WebSocket = require('ws');
 
+// utils
+const currentDate = () => {
+  const date = new Date()
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
+
 // configure cli args option
 const program = new Command();
 program.version('0.0.1');
@@ -16,30 +22,38 @@ program.parse(process.argv);
 const { host, port } = program.opts()
 
 // console the start port scan info
-console.info(chalk.blue(`start port scan host: ${host}, port: ${port}`));
+console.info(chalk.blue(`[${currentDate()}] start port scan host: ${host}, port: ${port}`));
 
 // do the port scan work
 const url = 'ws://coolaf.com:9010/tool/ajaxport';
 const socket = new WebSocket(url, {
   origin: 'http://coolaf.com',
 })
+let timeoutID;
+const timeout = 5000;
+const closeIfInactive = (socket) => {
+  clearTimeout(timeoutID)
+  timeoutID = setTimeout(() => socket.close(), timeout);
+}
 
 socket.on("open", () => {
-  console.info(chalk.green(`connect to ${url} success!`));
+  console.info(chalk.green(`[${currentDate()}] connect to ${url} success!`));
   // send the request text message like
   // {"ip":"localhost","port":"80,21,22"}
-  socket.send(`{"ip":"${host}","port":"${port}"}`)
+  socket.send(`{"ip":"${host}","port":"${port}"}`);
   // close the socket
-  setTimeout(() => socket.close(), 10000);
+  closeIfInactive(socket);
 });
 
 socket.on("message", (data) => {
   // parse the response text message like
   // {"Host":"hao.360.cn","Ip":"36.110.236.68","Port":"2289","Status":"2"}
   const response = JSON.parse(data)
-  console.info(chalk.blue(`${response.Host}(${response.Ip}) ${response.Port} ${response.Status === '1' ? chalk.green('open') : chalk.red('closed')}`));
+  console.info(chalk.blue(`[${currentDate()}] ${response.Host}${response.Ip ? `(${response.Ip})`: ''} ${response.Port} ${response.Status === '1' ? chalk.green('open') : chalk.red('closed')}`));
+  // close when the last message arrives and after some timeout periods.
+  closeIfInactive(socket);
 })
 
-socket.on("error", (err) => console.log(chalk.red(`connection error: ${err}`)));
+socket.on("error", (err) => console.log(chalk.red(`[${currentDate()}] connection error: ${err}`)));
 
-socket.on("close", (err) => console.log(chalk.red(`connection close: ${err}`)));
+socket.on("close", (err) => console.log(chalk.red(`[${currentDate()}] connection close: ${err}`)));
